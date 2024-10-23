@@ -10,6 +10,9 @@
 #include "bme280.h"
 #include "bme280_defs.h"
 
+#include "bmi160_esp32.h"
+//TODO: zmienić na doxyfile
+
 #include "i2c.h"
 
 #include "lora.h"
@@ -92,6 +95,8 @@ typedef struct bme280
 	sensor_context_t bme280_sensor_context;
 
 } bme280_t;
+
+struct bmi160_dev bmi160dev;
 
 typedef struct bq27441
 {
@@ -178,6 +183,7 @@ static void sys_wr_ram_from_nvs(void);
 static void initialize_i2c(void);
 static void configure_bq27441(void);
 static void configure_bme280(void);
+static void configure_bmi160(void);
 
 /* Packet construction functions */
 static void packet_create_header(packet_t *packet, const DataType type);
@@ -409,16 +415,36 @@ static void configure_bme280(void)
 	node.sensors.bme280.bme280_sensor_context.driver_data = &node.sensors.bme280.bme280_config;
 }
 
+static void configure_bmi160(void)
+{
+    /* link read/write/delay function of host system to appropriate
+     * bmi160 function call prototypes */
+    bmi160dev.write = bmi160_i2c_w; 
+    bmi160dev.read = bmi160_i2c_r; 
+    bmi160dev.delay_ms = 1; //TODO:Replace this uint32_t delay_ms, 400/450 µs in low-power
+
+    /* This device uses a coines I2C R/W API:
+    int8_t coines_read_i2c(uint8_t dev_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t count); */
+    // int8_t (*bmi160_write_fptr_t)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *read_data, uint16_t len);
+    // esp_err_t i2c_write(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t *data, const size_t data_len)
+    /* set correct i2c address */
+    bmi160dev.id = BMI160_I2C_INTF;
+    bmi160dev.intf = BMI160_I2C_INTF;
+}
+
+
 static void initialize_sensors(void)
 {
 	esp_err_t bme_rc = ESP_OK;
 	esp_err_t bq_rc = ESP_OK;
-
 	initialize_i2c();
 
 	configure_bq27441();
 	configure_bme280();
-
+	configure_bmi160();
+	ESP_ERROR_CHECK(init_bmi160(&bmi160dev)); // mieszanie kodu i legacy, mmm
+					
+					
 	bme_rc = sensor_init(&node.sensors.bq27441.bq_sensor_context, &bq27441_interface, &node.sensors.bq27441.bq_config);
 
 	if (ESP_OK != bme_rc)
