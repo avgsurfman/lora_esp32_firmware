@@ -2,7 +2,7 @@
 #define BMI160_ESP32_H_
 
 #include "esp_err.h"
-#include "bmi160_defs.h"
+#include "bmi160.c"
 
 void init_sensor_interface(void);
 /*!
