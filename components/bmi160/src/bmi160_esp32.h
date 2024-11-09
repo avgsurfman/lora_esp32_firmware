@@ -2,7 +2,7 @@
 #define BMI160_ESP32_H_
 
 #include "esp_err.h"
-#include "bmi160.c"
+#include "bmi160.h"
 
 void init_sensor_interface(void);
 /*!
@@ -20,7 +20,7 @@ void init_sensor_interface(void);
  * @retval Negative Error
  */
 
-esp_err_t init_bmi160(bmi160_dev* bmi160dev); 
+esp_err_t init_bmi160(struct bmi160_dev* bmi160dev); 
 
 /*!
  * \ingroup bmi160-esp32API

@@ -11,7 +11,6 @@
 #include "bme280_defs.h"
 
 #include "bmi160_esp32.h"
-//TODO: zmienić na doxyfile
 
 #include "i2c.h"
 
