@@ -20,4 +20,11 @@ menu "BMI160 Configuration"
 			help
 				I2C Speed of the Master device.
 	endmenu
+
+	menu "I2C Adress"
+		config BMI160_SLAVE_ALT_ADDR
+			bool "Use the alternative 0x69 adress instead of the default 0x68  address."
+			help 
+				Note: Changing the adress requires to default (0x68) requires connection to the ground.
+	endmenu
 endmenu

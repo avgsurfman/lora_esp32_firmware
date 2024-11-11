@@ -31,10 +31,6 @@
 #define	SCL_PIN		CONFIG_BMI160_I2C_SCL
 #define SDA_PIN		CONFIG_BMI160_I2C_SDA
 
-//Device address
-#define BMI160_DEV_ADDR		BMI160_I2C_ADDR // 0x68, 0x69 if jumpered
-
-
 
 /*********************************************************************/
 /* global variables */
@@ -110,6 +106,12 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
 {
     int8_t rslt;
 
+    printf("Debug: started. Value of BMI160_DEV_ADDR: %x \n", BMI160_DEV_ADDR);
+    printf("Null pointer check...");
+    if (bmi160dev) {
+	    printf("Clear. Reading from the struct: DEV_ADDR=%x \n", bmi160dev->id);
+    }
+    else printf("NULL POINTER! \n");
     rslt = bmi160_init(bmi160dev);
 
     if (rslt == BMI160_OK)

@@ -10,6 +10,7 @@
 #include "bme280.h"
 #include "bme280_defs.h"
 
+
 #include "bmi160_esp32.h"
 
 #include "i2c.h"
@@ -96,6 +97,7 @@ typedef struct bme280
 } bme280_t;
 
 struct bmi160_dev bmi160dev;
+//TODO: Set the settings using a C99-style dot (.) declaration
 
 typedef struct bq27441
 {
@@ -420,14 +422,14 @@ static void configure_bmi160(void)
      * bmi160 function call prototypes */
     bmi160dev.write = bmi160_i2c_w; 
     bmi160dev.read = bmi160_i2c_r; 
-    bmi160dev.delay_ms = 1; //TODO:Replace this uint32_t delay_ms, 400/450 µs in low-power
+    bmi160dev.delay_ms = 10; //TODO:Replace this!!! This needs a delay function :uint32_t delay_ms
 
     /* This device uses a coines I2C R/W API:
     int8_t coines_read_i2c(uint8_t dev_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t count); */
     // int8_t (*bmi160_write_fptr_t)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *read_data, uint16_t len);
     // esp_err_t i2c_write(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t *data, const size_t data_len)
     /* set correct i2c address */
-    bmi160dev.id = BMI160_I2C_INTF;
+    bmi160dev.id = BMI160_DEV_ADDR;
     bmi160dev.intf = BMI160_I2C_INTF;
 }
 

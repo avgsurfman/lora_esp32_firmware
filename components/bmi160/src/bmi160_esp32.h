@@ -3,6 +3,7 @@
 
 #include "esp_err.h"
 #include "bmi160.h"
+#include "bmi160_esp32_defs.h"
 
 void init_sensor_interface(void);
 /*!
