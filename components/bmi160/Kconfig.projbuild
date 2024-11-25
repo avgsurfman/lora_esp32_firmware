@@ -27,4 +27,11 @@ menu "BMI160 Configuration"
 			help 
 				Note: Changing the adress requires to default (0x68) requires connection to the ground.
 	endmenu
+
+	menu "Use own I2C Library"
+		config OWN_I2C
+			bool "Use alternative Backup implementation defined in this component."
+			help
+				WIP. Does not work. Scheduled for removal.	
+	endmenu
 endmenu

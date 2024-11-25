@@ -422,14 +422,10 @@ static void configure_bmi160(void)
      * bmi160 function call prototypes */
     bmi160dev.write = bmi160_i2c_w; 
     bmi160dev.read = bmi160_i2c_r; 
-    bmi160dev.delay_ms = 10; //TODO:Replace this!!! This needs a delay function :uint32_t delay_ms
+    bmi160dev.delay_ms = bmi160_delay_msec; // Copied — hopefully works...
 
-    /* This device uses a coines I2C R/W API:
-    int8_t coines_read_i2c(uint8_t dev_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t count); */
-    // int8_t (*bmi160_write_fptr_t)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *read_data, uint16_t len);
-    // esp_err_t i2c_write(const uint8_t dev_addr, const uint8_t reg_addr, const uint8_t *data, const size_t data_len)
-    /* set correct i2c address */
     bmi160dev.id = BMI160_DEV_ADDR;
+    ESP_LOGD(TAG, "I2C Address: %x", BMI160_DEV_ADDR);
     bmi160dev.intf = BMI160_I2C_INTF;
 }
 
@@ -443,7 +439,7 @@ static void initialize_sensors(void)
 	configure_bq27441();
 	configure_bme280();
 	configure_bmi160();
-	ESP_ERROR_CHECK(init_bmi160(&bmi160dev)); // mieszanie kodu i legacy, mmm
+	ESP_ERROR_CHECK(init_bmi160(&bmi160dev)); // mieszanie nowych metod i legacy, mmm
 					
 					
 	bme_rc = sensor_init(&node.sensors.bq27441.bq_sensor_context, &bq27441_interface, &node.sensors.bq27441.bq_config);

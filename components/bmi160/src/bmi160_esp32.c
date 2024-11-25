@@ -4,7 +4,6 @@
 /* system header files */
 /*********************************************************************/
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
 
 /*********************************************************************/
@@ -22,6 +21,7 @@
 /* own header files */
 /*********************************************************************/
 
+//#include "driver/i2c_slave.h"
 #include "i2c.h"
 #include "bmi160_esp32.h"
 
@@ -31,6 +31,7 @@
 #define	SCL_PIN		CONFIG_BMI160_I2C_SCL
 #define SDA_PIN		CONFIG_BMI160_I2C_SDA
 
+// logging
 
 /*********************************************************************/
 /* global variables */
@@ -44,19 +45,34 @@ struct bmi160_sensor_data bmi160_accel;
 struct bmi160_sensor_data bmi160_gyro;
 
 
+/*! @brief Stores config in the balls */
+/*
+i2c_slave_config_t bmi160_i2c_slv_config = {
+    		.addr_bit_len = I2C_ADDR_BIT_LEN_7,
+    		.clk_source = I2C_CLK_SRC_DEFAULT,
+		.i2c_port = -1, // autoselect the i2c controller
+    		.send_buf_depth = 256,
+    		.scl_io_num = SCL_PIN,
+    		.sda_io_num = SDA_PIN,
+    		.slave_addr = BMI160_DEV_ADDR,
+};
+
+*/
+
+//allocate memory
+//i2c_slave_dev_handle_t bmi160_i2c_slave;
+
+static const char* TAG = "BMI160";
+
 /*********************************************************************/
 /* Static Function declarations */
 /*********************************************************************/
-
+ 
 
 /*********************************************************************/
 /* Function declarations */
 /*********************************************************************/
 
-/*!
- * @brief WIP, I2C write using master.h library
- */
-esp_err_t bmi160_i2c_write(void);
 
 /*!
  * @brief   Mock-up function, SDO is not soldered yet. This would normally be for
@@ -64,6 +80,16 @@ esp_err_t bmi160_i2c_write(void);
  */
 void init_sensor_interface(void);
 
+
+/**
+ * @brief Delay function used by the struct.
+ *
+ * @param ms - miliseconds of delay.
+ */
+void bmi160_delay_msec(uint32_t ms)
+{
+    vTaskDelay(ms / portTICK_PERIOD_MS);
+}
 
 /**
  * @brief Component I2C wrapper write function.
@@ -102,26 +128,34 @@ int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
  *  @return esp_err_t
  *
  */
+
+
 esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
 {
     int8_t rslt;
 
-    printf("Debug: started. Value of BMI160_DEV_ADDR: %x \n", BMI160_DEV_ADDR);
-    printf("Null pointer check...");
+    ESP_LOGD(TAG ,"Debug: started. Chip adress: BMI160_DEV_ADDR: %x \n", BMI160_DEV_ADDR);
+    ESP_LOGD(TAG,"Null pointer check...");
     if (bmi160dev) {
-	    printf("Clear. Reading from the struct: DEV_ADDR=%x \n", bmi160dev->id);
+	    ESP_LOGD(TAG ,"Clear. Reading from the struct: DEV_ADDR=%x \n", bmi160dev->id);
     }
-    else printf("NULL POINTER! \n");
+    else {
+	    ESP_LOGE(TAG,"NULL POINTER EXCEPTION \n");
+	    return ESP_ERR_NOT_FOUND;
+    }
     rslt = bmi160_init(bmi160dev);
 
+    // I2C's the default for now
+    // Check struct's protocol field
+    if (!bmi160dev->intf) bmi160_i2c_init(); else return ESP_FAIL;
     if (rslt == BMI160_OK)
     {
-        printf("BMI160 initialization success !\n");
-        printf("Chip ID 0x%X\n", bmi160dev->chip_id);
+        ESP_LOGI(TAG,"BMI160 initialization success ! ");
+        ESP_LOGI(TAG,"Chip ID 0x%X\n", bmi160dev->chip_id);
     }
     else
     {
-        printf("BMI160 initialization failure !\n ERROR: %d \n", rslt);
+        ESP_LOGE(TAG,"BMI160 initialization failure !\n ERROR: %d \n", rslt);
 	return ESP_FAIL;
     }
 
@@ -162,31 +196,15 @@ int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
 
 // Garbage as I2C went elsewhere, can be reused as the main component 
 /*! @brief: i2c init */
-/*esp_err_t i2c_master_init(void){
-	
-	i2c_master_bus_config_t i2c_mst_config = {
-	    .clk_source = I2C_CLK_SRC_XTAL, 
-	    // TODO:CHANGE THIS TO REDUCE POWER CONSUMPTION
-	    // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html#power-management
-	    .i2c_port = -1, //autoselect the i2c controller
-	    .scl_io_num = SCL_PIN,
-	    .sda_io_num = SDA_PIN,
-	    .glitch_ignore_cnt = 7,
-	    .flags.enable_internal_pullup = true,
-	};
-	
-	.i2c_master_bus_handle_t bus_handler;
-	ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
-	
-	i2c_device_config_t dev_cfg = {
-	    .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-	    .device_address = 0x68,
-	    .scl_speed_hz = 100000, // max
-	};
-	
-	//adds device 
-	.i2c_master_bus_handle_t bus_handler;
-	ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle));
+void bmi160_i2c_init(void){
+	ESP_LOGD(TAG, "Initializing I2C...");
+
+	//ESP_ERROR_CHECK(i2c_new_slave_device(&bmi160_i2c_slv_config, &bmi160_i2c_slave));
+
 }
-*/
+
+esp_err_t bmi160_i2c_end(void){ // TODO:
+	//return i2c_del_slave_device(bmi160_i2c_slave);
+	return ESP_OK;
+}
 
