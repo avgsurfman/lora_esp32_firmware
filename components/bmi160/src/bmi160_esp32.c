@@ -1,5 +1,4 @@
-
-
+// Copyright Franciszek Moszczuk, MIT License
 /*********************************************************************/
 /* system header files */
 /*********************************************************************/
@@ -45,23 +44,6 @@ struct bmi160_sensor_data bmi160_accel;
 struct bmi160_sensor_data bmi160_gyro;
 
 
-/*! @brief Stores config in the balls */
-/*
-i2c_slave_config_t bmi160_i2c_slv_config = {
-    		.addr_bit_len = I2C_ADDR_BIT_LEN_7,
-    		.clk_source = I2C_CLK_SRC_DEFAULT,
-		.i2c_port = -1, // autoselect the i2c controller
-    		.send_buf_depth = 256,
-    		.scl_io_num = SCL_PIN,
-    		.sda_io_num = SDA_PIN,
-    		.slave_addr = BMI160_DEV_ADDR,
-};
-
-*/
-
-//allocate memory
-//i2c_slave_dev_handle_t bmi160_i2c_slave;
-
 static const char* TAG = "BMI160";
 
 /*********************************************************************/
@@ -75,8 +57,9 @@ static const char* TAG = "BMI160";
 
 
 /*!
- * @brief   Mock-up function, SDO is not soldered yet. This would normally be for
- * setting up the Interrupts on the chip.
+ * @brief   Mock-up function, the SDO pin is not soldered yet. This would 
+ * normally be for selecting the default 0x68 address via changing 
+ * the SDO pin to low (0).
  */
 void init_sensor_interface(void);
 
@@ -123,18 +106,16 @@ int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
 /*!
  *  @brief Call this to initialize the chip.
  *
- *  @param[in] void
+ *  @param bmi160dev The device struct.
  *
- *  @return esp_err_t
+ *  @return esp_err_t Error status of the operation.
  *
  */
-
-
 esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
 {
     int8_t rslt;
 
-    ESP_LOGD(TAG ,"Debug: started. Chip adress: BMI160_DEV_ADDR: %x \n", BMI160_DEV_ADDR);
+    ESP_LOGD(TAG ,"Debug: started. Chip adress: BMI160_DEV_ADDR= %x \n", BMI160_DEV_ADDR);
     ESP_LOGD(TAG,"Null pointer check...");
     if (bmi160dev) {
 	    ESP_LOGD(TAG ,"Clear. Reading from the struct: DEV_ADDR=%x \n", bmi160dev->id);
@@ -147,7 +128,7 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
 
     // I2C's the default for now
     // Check struct's protocol field
-    if (!bmi160dev->intf) bmi160_i2c_init(); else return ESP_FAIL;
+    if (!bmi160dev->intf); else return ESP_FAIL;
     if (rslt == BMI160_OK)
     {
         ESP_LOGI(TAG,"BMI160 initialization success ! ");
@@ -194,11 +175,10 @@ int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
 }
 
 
-// Garbage as I2C went elsewhere, can be reused as the main component 
-/*! @brief: i2c init */
+// Garbage as I2C went elsewhere, can be reused in the future 
 void bmi160_i2c_init(void){
 	ESP_LOGD(TAG, "Initializing I2C...");
-
+	ESP_LOGE(TAG, "NOT IMPLEMENTED.");
 	//ESP_ERROR_CHECK(i2c_new_slave_device(&bmi160_i2c_slv_config, &bmi160_i2c_slave));
 
 }
