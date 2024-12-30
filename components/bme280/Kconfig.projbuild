@@ -1,7 +1,11 @@
 menu "BME280 configuration"
+    config BME280
+        bool "Enable the module"
+	default y
     config BME280_I2C_ADDRESS
         hex "I2C address"
+	depends on BME280
         default (0x76)
         help
-            I2C address of the BME280 sensor
+            I2C address of the BME280 sensor.
 endmenu

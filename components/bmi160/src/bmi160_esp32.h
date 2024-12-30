@@ -29,8 +29,7 @@ void bmi160_delay_msec(uint32_t ms);
  *
  */
 
-
-esp_err_t init_bmi160(struct bmi160_dev* bmi160dev); 
+esp_err_t init_bmi160(struct bmi160_dev* bmi160dev, struct bmi160_cfg* accelcfg, struct bmi160_cfg* gyrocfg)
 
 /*!
  * \ingroup bmi160-esp32API

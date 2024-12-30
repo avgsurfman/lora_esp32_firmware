@@ -111,7 +111,7 @@ int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
  *  @return esp_err_t Error status of the operation.
  *
  */
-esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
+esp_err_t init_bmi160(struct bmi160_dev* bmi160dev, struct bmi160_cfg* accelcfg, struct bmi160_cfg* gyrocfg)
 {
     int8_t rslt;
 
@@ -126,8 +126,7 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
     }
     rslt = bmi160_init(bmi160dev);
 
-    // I2C's the default for now
-    // Check struct's protocol field
+    // I2C's the default for now, Check struct's protocol field
     if (!bmi160dev->intf); else return ESP_FAIL;
     if (rslt == BMI160_OK)
     {
@@ -140,26 +139,49 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev)
 	return ESP_FAIL;
     }
 
-    // TODO:ZMIENIĆ TO I PODLINKOWAĆ POD LOW-POWER MODE
-    /* Select the Output data rate, range of accelerometer sensor */
-    bmi160dev->accel_cfg.odr = BMI160_ACCEL_ODR_1600HZ;
-    bmi160dev->accel_cfg.range = BMI160_ACCEL_RANGE_16G;
-    bmi160dev->accel_cfg.bw = BMI160_ACCEL_BW_NORMAL_AVG4;
+    // Full config is passed
+    if (accelcfg && gyrocfg) {
+	    	/* ACCEL CONFIG */
+    		/* Select the Output data rate, range of accelerometer sensor */
+    		bmi160dev->accel_cfg.odr = accelcfg->odr;
+    		bmi160dev->accel_cfg.range = accelcfg->range;
+    		bmi160dev->accel_cfg.bw = accelcfg->bw;
 
-    /* Select the power mode of accelerometer sensor */
-    bmi160dev->accel_cfg.power = BMI160_ACCEL_NORMAL_MODE;
+    		/* Select the power mode of a */
+    		bmi160dev->accel_cfg.power = BMI160_ACCEL_NORMAL_MODE;
 
-    /* Select the Output data rate, range of Gyroscope sensor */
-    bmi160dev->gyro_cfg.odr = BMI160_GYRO_ODR_3200HZ;
-    bmi160dev->gyro_cfg.range = BMI160_GYRO_RANGE_2000_DPS;
-    bmi160dev->gyro_cfg.bw = BMI160_GYRO_BW_NORMAL_MODE;
+		/* GYRO CONFIG */
+    		/* Select the Output data rate, range of Gyroscope sensor */
+    		bmi160dev->gyro_cfg.odr = gyrocfg->odr;
+    		bmi160dev->gyro_cfg.range = gyrocfg->range;
+    		bmi160dev->gyro_cfg.bw = gyrocfg->bw;
 
-    /* Select the power mode of Gyroscope sensor */
-    bmi160dev->gyro_cfg.power = BMI160_GYRO_NORMAL_MODE;
+    		/* Select the power mode of Gyroscope sensor */
+    		bmi160dev->gyro_cfg.power = gyrocfg->power;
+    }
+    else {
+    	ESP_LOGW(TAG,"Config not passed, using default params...");
 
-    /* Set the sensor configuration */
-    rslt = bmi160_set_sens_conf(bmi160dev);
+    	/* Select the Output data rate, range of accelerometer sensor */
+    	bmi160dev->accel_cfg.odr = BMI160_ACCEL_ODR_1600HZ;
+    	bmi160dev->accel_cfg.range = BMI160_ACCEL_RANGE_16G;
+    	bmi160dev->accel_cfg.bw = BMI160_ACCEL_BW_NORMAL_AVG4;
 
+    	/* Select the power mode of accelerometer sensor */
+    	bmi160dev->accel_cfg.power = BMI160_ACCEL_NORMAL_MODE;
+
+    	/* Select the Output data rate, range of Gyroscope sensor */
+    	bmi160dev->gyro_cfg.odr = BMI160_GYRO_ODR_3200HZ;
+    	bmi160dev->gyro_cfg.range = BMI160_GYRO_RANGE_2000_DPS;
+    	bmi160dev->gyro_cfg.bw = BMI160_GYRO_BW_NORMAL_MODE;
+
+    	/* Select the power mode of Gyroscope sensor */
+    	bmi160dev->gyro_cfg.power = BMI160_GYRO_NORMAL_MODE;
+
+    	/* Set the sensor configuration */
+    	rslt = bmi160_set_sens_conf(bmi160dev);
+    }
+    // add interrupt
     return ESP_OK;
 }
 

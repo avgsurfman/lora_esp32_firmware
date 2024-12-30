@@ -435,12 +435,16 @@ static void initialize_sensors(void)
 	esp_err_t bme_rc = ESP_OK;
 	esp_err_t bq_rc = ESP_OK;
 	initialize_i2c();
-
+#ifdef CONFIG_BQ27441
 	configure_bq27441();
+#endif
+#ifdef CONFIG_BMI280
 	configure_bme280();
+#endif
+#ifdef CONFIG_BMI160
 	configure_bmi160();
-	ESP_ERROR_CHECK(init_bmi160(&bmi160dev)); // mieszanie nowych metod i legacy, mmm
-					
+	ESP_ERROR_CHECK(init_bmi160(&bmi160dev, 0)); // mieszanie nowych metod i legacy, mmm
+#endif				
 					
 	bme_rc = sensor_init(&node.sensors.bq27441.bq_sensor_context, &bq27441_interface, &node.sensors.bq27441.bq_config);
 
