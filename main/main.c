@@ -398,6 +398,7 @@ static void initialize_i2c(void)
 	i2c_init();
 }
 
+#ifdef CONFIG_BQ27441
 static void configure_bq27441(void)
 {
 	node.sensors.bq27441.bq_config.i2c_address = CONFIG_BQ27441_I2C_ADDRESS;
@@ -407,7 +408,9 @@ static void configure_bq27441(void)
 	node.sensors.bq27441.bq_sensor_context.interface = &bq27441_interface;
 	node.sensors.bq27441.bq_sensor_context.driver_data = &node.sensors.bq27441.bq_config;
 }
+#endif
 
+#ifdef CONFIG_BME260
 static void configure_bme280(void)
 {
 	node.sensors.bme280.bme280_config.i2c_address = CONFIG_BME280_I2C_ADDRESS;
@@ -415,7 +418,9 @@ static void configure_bme280(void)
 	node.sensors.bme280.bme280_sensor_context.interface = &bme280_interface;
 	node.sensors.bme280.bme280_sensor_context.driver_data = &node.sensors.bme280.bme280_config;
 }
+#endif
 
+#ifdef CONFIG_BMI160
 static void configure_bmi160(void)
 {
     /* link read/write/delay function of host system to appropriate
@@ -428,32 +433,25 @@ static void configure_bmi160(void)
     ESP_LOGD(TAG, "I2C Address: %x", BMI160_DEV_ADDR);
     bmi160dev.intf = BMI160_I2C_INTF;
 }
-
+#endif
 
 static void initialize_sensors(void)
 {
 	esp_err_t bme_rc = ESP_OK;
 	esp_err_t bq_rc = ESP_OK;
 	initialize_i2c();
+
 #ifdef CONFIG_BQ27441
 	configure_bq27441();
-#endif
-#ifdef CONFIG_BMI280
-	configure_bme280();
-#endif
-#ifdef CONFIG_BMI160
-	configure_bmi160();
-	ESP_ERROR_CHECK(init_bmi160(&bmi160dev, 0)); // mieszanie nowych metod i legacy, mmm
-#endif				
-					
 	bme_rc = sensor_init(&node.sensors.bq27441.bq_sensor_context, &bq27441_interface, &node.sensors.bq27441.bq_config);
-
 	if (ESP_OK != bme_rc)
 	{
 		ESP_LOGE(TAG, "BQ27441 initialization failed");
 		node.status |= xNODE_BQ27441_FAIL;
 	}
-
+#endif
+#ifdef CONFIG_BMI280
+	configure_bme280();
 	bq_rc = sensor_init(&node.sensors.bme280.bme280_sensor_context, &bme280_interface, &node.sensors.bme280.bme280_config);
 
 	if (ESP_OK != bq_rc)
@@ -472,6 +470,12 @@ static void initialize_sensors(void)
 			node.status |= xNODE_BME280_FAIL;
 		}
 	}
+#endif
+#ifdef CONFIG_BMI160
+	configure_bmi160();
+	ESP_ERROR_CHECK(init_bmi160(&bmi160dev, 0, 0)); // mieszanie nowych metod i legacy, mmm
+#endif				
+
 }
 #endif
 

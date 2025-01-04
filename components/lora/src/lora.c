@@ -125,10 +125,13 @@ lora_status_t lora_init(void)
     ESP_LOGI(LORA_TAG, "CRC: %d", LORA_CRC);
     ESP_LOGI(LORA_TAG, "TRANSMIT POWER: %d", LORA_POWER);
 
-    if (LORA_OK != lora_driver_init())
+
+    lora_status_t res = lora_driver_init();
+    if (LORA_OK != res)
     {
-        ESP_LOGE(LORA_TAG, "LoRa initialization failed\n");
-        esp_restart();
+        ESP_LOGE(LORA_TAG, "LoRa initialization failed: %x\n", res);
+        esp_restart(); 
+	
     }
 
     lora_set_frequency(LORA_FREQUENCY);
