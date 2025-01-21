@@ -44,7 +44,7 @@ struct bmi160_sensor_data bmi160_accel;
 struct bmi160_sensor_data bmi160_gyro;
 
 
-static const char* TAG = "BMI160";
+const char* BMI_TAG = "BMI160";
 
 /*********************************************************************/
 /* Static Function declarations */
@@ -115,13 +115,13 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev, struct bmi160_cfg* accelcfg,
 {
     int8_t rslt;
 
-    ESP_LOGD(TAG ,"Debug: started. Chip adress: BMI160_DEV_ADDR= %x \n", BMI160_DEV_ADDR);
-    ESP_LOGD(TAG,"Null pointer check...");
+    ESP_LOGD(BMI_TAG ,"Debug: started. Chip adress: BMI160_DEV_ADDR= %x \n", BMI160_DEV_ADDR);
+    ESP_LOGD(BMI_TAG,"Null pointer check...");
     if (bmi160dev) {
-	    ESP_LOGD(TAG ,"Clear. Reading from the struct: DEV_ADDR=%x \n", bmi160dev->id);
+	    ESP_LOGD(BMI_TAG ,"Clear. Reading from the struct: DEV_ADDR=%x \n", bmi160dev->id);
     }
     else {
-	    ESP_LOGE(TAG,"NULL POINTER EXCEPTION \n");
+	    ESP_LOGE(BMI_TAG,"NULL POINTER EXCEPTION \n");
 	    return ESP_ERR_NOT_FOUND;
     }
     rslt = bmi160_init(bmi160dev);
@@ -130,12 +130,12 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev, struct bmi160_cfg* accelcfg,
     if (!bmi160dev->intf); else return ESP_FAIL;
     if (rslt == BMI160_OK)
     {
-        ESP_LOGI(TAG,"BMI160 initialization success ! ");
-        ESP_LOGI(TAG,"Chip ID 0x%X\n", bmi160dev->chip_id);
+        ESP_LOGI(BMI_TAG,"BMI160 initialization success ! ");
+        ESP_LOGI(BMI_TAG,"Chip ID 0x%X\n", bmi160dev->chip_id);
     }
     else
     {
-        ESP_LOGE(TAG,"BMI160 initialization failure !\n ERROR: %d \n", rslt);
+        ESP_LOGE(BMI_TAG,"BMI160 initialization failure !\n ERROR: %d \n", rslt);
 	return ESP_FAIL;
     }
 
@@ -160,7 +160,7 @@ esp_err_t init_bmi160(struct bmi160_dev* bmi160dev, struct bmi160_cfg* accelcfg,
     		bmi160dev->gyro_cfg.power = gyrocfg->power;
     }
     else {
-    	ESP_LOGW(TAG,"Config not passed, using default params...");
+    	ESP_LOGW(BMI_TAG,"Config not passed, using default params...");
 
     	/* Select the Output data rate, range of accelerometer sensor */
     	bmi160dev->accel_cfg.odr = BMI160_ACCEL_ODR_1600HZ;
@@ -199,8 +199,8 @@ int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
 
 // Garbage as I2C went elsewhere, can be reused in the future 
 void bmi160_i2c_init(void){
-	ESP_LOGD(TAG, "Initializing I2C...");
-	ESP_LOGE(TAG, "NOT IMPLEMENTED.");
+	ESP_LOGD(BMI_TAG, "Initializing I2C...");
+	ESP_LOGE(BMI_TAG, "NOT IMPLEMENTED.");
 	//ESP_ERROR_CHECK(i2c_new_slave_device(&bmi160_i2c_slv_config, &bmi160_i2c_slave));
 
 }

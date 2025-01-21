@@ -97,7 +97,8 @@ typedef struct bme280
 } bme280_t;
 
 struct bmi160_dev bmi160dev;
-//TODO: Set the settings using a C99-style dot (.) declaration
+//TODO: Set the settings using a C99-style dot (.) declaration 
+//TODO: Add poor man's documenation
 
 typedef struct bq27441
 {
@@ -203,7 +204,7 @@ static nvs_map_t nvs_map =
 		"msg_counter",
 		"comms_err_cnt",
 		"life_cycle"};
-
+//enums fucking exist 
 static buzzverse_link_t buzzverse_link[MAX_DATA_TYPES] =
 	{
 		{&handler_unknown, &sender_unknown}, // 0 - Reserved
@@ -265,6 +266,7 @@ static void packet_create_header(packet_t *packet, const DataType type)
 
 		/*
 		 * TEMPORARY: update msg counter and ID for debug purpose.
+		 * edit: that was not, in fact, temporary.
 		 */
 		packet->msgCount = node.radio.msg_counter++;
 		packet->msgID = node.radio.msg_id;
@@ -286,6 +288,8 @@ static void sender_unknown(void)
 	lora_send(&packet);
 }
 
+// create an interface at this point
+// #ifdef CONFIG_BME280 <- this bricks linking btw
 static void sender_bme280(void)
 {
 	uint8_t bme280_data[BME280_DATA_SIZE]; // Buffer to hold temperature, pressure, and humidity
@@ -326,6 +330,7 @@ static void sender_bme280(void)
 	}
 }
 
+// #endif // lord have fucking mercy
 static void sender_status(void)
 {
 	packet_create_header(&packet, STATUS);
@@ -410,7 +415,7 @@ static void configure_bq27441(void)
 }
 #endif
 
-#ifdef CONFIG_BME260
+#ifdef CONFIG_BME280
 static void configure_bme280(void)
 {
 	node.sensors.bme280.bme280_config.i2c_address = CONFIG_BME280_I2C_ADDRESS;
@@ -422,6 +427,7 @@ static void configure_bme280(void)
 
 #ifdef CONFIG_BMI160
 static void configure_bmi160(void)
+// wypierdolić, gdziekolwiek
 {
     /* link read/write/delay function of host system to appropriate
      * bmi160 function call prototypes */
@@ -450,7 +456,7 @@ static void initialize_sensors(void)
 		node.status |= xNODE_BQ27441_FAIL;
 	}
 #endif
-#ifdef CONFIG_BMI280
+#ifdef CONFIG_BME280
 	configure_bme280();
 	bq_rc = sensor_init(&node.sensors.bme280.bme280_sensor_context, &bme280_interface, &node.sensors.bme280.bme280_config);
 
@@ -473,11 +479,34 @@ static void initialize_sensors(void)
 #endif
 #ifdef CONFIG_BMI160
 	configure_bmi160();
-	ESP_ERROR_CHECK(init_bmi160(&bmi160dev, 0, 0)); // mieszanie nowych metod i legacy, mmm
+	ESP_ERROR_CHECK(init_bmi160(&bmi160dev, NULL, NULL)); // mieszanie nowych metod i legacy, mmm
 #endif				
 
 }
 #endif
+
+
+
+//TODO:WYJEBAC DO KOMPONENTU
+
+#ifdef CONFIG_BMI160
+void vTaskBMI160(void * pvParameters){
+	ESP_LOGD(BMI_TAG, "Getting info from the chip...");
+	TickType_t xLastWakeTime;
+	const TickType_t xFrequency = 3000 / portTICK_PERIOD_MS;
+
+	// Initialise the xLastWakeTime variable with the current time.
+	
+	xLastWakeTime = xTaskGetTickCount();
+	for(;;){
+	vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	bmi160_get_sensor_data((BMI160_ACCEL_SEL | BMI160_GYRO_SEL), &bmi160_accel, &bmi160_gyro, &bmi160dev);
+	printf("ax:%d\tay:%d\taz:%d\n", bmi160_accel.x, bmi160_accel.y, bmi160_accel.z);
+        printf("gx:%d\tgy:%d\tgz:%d\n", bmi160_gyro.x, bmi160_gyro.y, bmi160_gyro.z);
+	}
+}
+#endif
+
 
 #if CONFIG_LORA_TRANSMITTER
 
@@ -705,6 +734,10 @@ static void sys_umount_nvs(nvs_handle_t handle)
 	fflush(stdout);
 }
 
+// more compartamentalized fucking code, awesome
+// TODO: GTFO this to cxx-like <iterator> or some other container
+// we're iterating over components that may change anytime
+// unreusable
 static void sys_wr_nvs_from_ram(void)
 {
 	nvs_handle_t handle;
@@ -735,6 +768,17 @@ static void sys_wr_ram_from_nvs(void)
 
 void app_main(void)
 {
+#if CONFIG_BMI160 // wyjebac do pliku
+	ESP_LOGD(BMI_TAG, "Chip task init.");
+	TaskHandle_t xHandle = NULL;
+	xTaskCreate(vTaskBMI160, "BMI160", 
+			configMINIMAL_STACK_SIZE, 
+			NULL, 5, &xHandle);
+	// TODO: add uxTaskGetStackHighWaterMark, function params
+	configASSERT(xHandle);
+	// przy okazji WSZYSTKIE taski powinny byc usuwane z vTaskDelete
+	// jezeli koncza prace
+#endif 
 	ESP_LOGI(TAG, "Initializing LoRa");
 
 	node.system.queue = xQueueCreate(SYS_QUEUE_SZ, sizeof(sys_msg_t));
@@ -746,6 +790,7 @@ void app_main(void)
 	{
 		ESP_LOGE(TAG, "SYSTEM task not created!");
 	}
+
 #if CONFIG_LORA_TRANSMITTER
 
 	node.radio.queue_sch = xQueueCreate(SCH_QUEUE_SZ, sizeof(sch_msg_t));

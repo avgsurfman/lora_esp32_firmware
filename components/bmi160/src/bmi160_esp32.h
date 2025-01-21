@@ -5,6 +5,15 @@
 #include "bmi160.h"
 #include "bmi160_esp32_defs.h"
 
+
+/* consts */
+extern const char* BMI_TAG;
+
+/* structs */
+extern struct bmi160_sensor_data bmi160_accel;
+extern struct bmi160_sensor_data bmi160_gyro;
+
+
 void init_sensor_interface(void);
 /*!
  * \ingroup bmi160-esp32API
