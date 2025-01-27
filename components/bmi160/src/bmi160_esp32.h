@@ -88,13 +88,12 @@ int8_t bmi160_i2c_w(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t 
  * @param data
  * @param len
  *
- * @return Dunno actually 
+ * @return Read data 
  */
 int8_t bmi160_i2c_r(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t len);
 
 
 void bmi160_i2c_init();
 
-esp_err_t bmi160_i2c_end();
-
+void configure_bmi160(struct bmi160_dev* bmi160dev);
 #endif 

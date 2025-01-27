@@ -205,8 +205,20 @@ void bmi160_i2c_init(void){
 
 }
 
-esp_err_t bmi160_i2c_end(void){ // TODO:
+static esp_err_t bmi160_i2c_end(void){ // TODO:
 	//return i2c_del_slave_device(bmi160_i2c_slave);
 	return ESP_OK;
 }
 
+void configure_bmi160(struct bmi160_dev* bmi160dev)
+{
+    /* link read/write/delay function of host system to appropriate
+     * bmi160 function call prototypes */
+    bmi160dev->write = bmi160_i2c_w; 
+    bmi160dev->read = bmi160_i2c_r; 
+    bmi160dev->delay_ms = bmi160_delay_msec; // Copied — hopefully works...
+
+    bmi160dev->id = BMI160_DEV_ADDR;
+    ESP_LOGD(BMI_TAG, "I2C Address: %x", BMI160_DEV_ADDR);
+    bmi160dev->intf = BMI160_I2C_INTF;
+}

@@ -185,7 +185,8 @@ static void sys_wr_ram_from_nvs(void);
 static void initialize_i2c(void);
 static void configure_bq27441(void);
 static void configure_bme280(void);
-static void configure_bmi160(void);
+//static void configure_bmi160(void);
+//wywalone do kompomentu
 
 /* Packet construction functions */
 static void packet_create_header(packet_t *packet, const DataType type);
@@ -204,7 +205,7 @@ static nvs_map_t nvs_map =
 		"msg_counter",
 		"comms_err_cnt",
 		"life_cycle"};
-//enums fucking exist 
+//enums fucking exist for fucks sake 
 static buzzverse_link_t buzzverse_link[MAX_DATA_TYPES] =
 	{
 		{&handler_unknown, &sender_unknown}, // 0 - Reserved
@@ -425,21 +426,6 @@ static void configure_bme280(void)
 }
 #endif
 
-#ifdef CONFIG_BMI160
-static void configure_bmi160(void)
-// wypierdolić, gdziekolwiek
-{
-    /* link read/write/delay function of host system to appropriate
-     * bmi160 function call prototypes */
-    bmi160dev.write = bmi160_i2c_w; 
-    bmi160dev.read = bmi160_i2c_r; 
-    bmi160dev.delay_ms = bmi160_delay_msec; // Copied — hopefully works...
-
-    bmi160dev.id = BMI160_DEV_ADDR;
-    ESP_LOGD(TAG, "I2C Address: %x", BMI160_DEV_ADDR);
-    bmi160dev.intf = BMI160_I2C_INTF;
-}
-#endif
 
 static void initialize_sensors(void)
 {
@@ -478,7 +464,7 @@ static void initialize_sensors(void)
 	}
 #endif
 #ifdef CONFIG_BMI160
-	configure_bmi160();
+	configure_bmi160(&bmi160dev);
 	ESP_ERROR_CHECK(init_bmi160(&bmi160dev, NULL, NULL)); // mieszanie nowych metod i legacy, mmm
 #endif				
 
